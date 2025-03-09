@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Twitter Profile Scraper</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; padding: 20px; }
+    form { margin-bottom: 20px; }
+    label { display: block; margin-top: 10px; }
+    input[type="text"] { width: 100%; padding: 8px; }
+    button { margin-top: 10px; padding: 8px 16px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #333; padding: 8px; text-align: left; }
+  </style>
+</head>
+<body>
+  <h2>Twitter Profile Scraper</h2>
+  <form id="scrapeForm" action="/scrape" method="post">
+    <label for="auth_token">Auth Token:</label>
+    <input type="text" id="auth_token" name="auth_token" required />
+
+    <label for="ct0">CT0 Token:</label>
+    <input type="text" id="ct0" name="ct0" required />
+
+    <label for="screen_names">Twitter Profiles (comma-separated):</label>
+    <input type="text" id="screen_names" name="screen_names" required />
+
+    <button type="submit">Scrape Profiles</button>
+  </form>
+
+  <div id="results"></div>
+
+  <script>
+    const form = document.getElementById("scrapeForm");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      document.getElementById("results").innerHTML = "<p>Scraping in progress...</p>";
+
+      const formData = new FormData(form);
+      const response = await fetch("/scrape", {
+        method: "POST",
+        body: formData
+      });
+      const data = await response.json();
+
+      let table = "<table><tr><th>Profile</th><th>Followers</th><th>Friends</th><th>Listed</th><th>Location</th></tr>";
+      for (let profile in data) {
+        const metrics = data[profile];
+        table += `<tr>
+                    <td>${profile}</td>
+                    <td>${metrics.followers_count || "N/A"}</td>
+                    <td>${metrics.friends_count || "N/A"}</td>
+                    <td>${metrics.listed_count || "N/A"}</td>
+                    <td>${metrics.location || "N/A"}</td>
+                  </tr>`;
+      }
+      table += "</table>";
+      document.getElementById("results").innerHTML = table;
+    });
+  </script>
+</body>
+</html>
